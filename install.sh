@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -22,8 +23,7 @@ need() { command -v "$1" >/dev/null 2>&1; }
 
 pm_install() {
   if need apt; then
-    sudo apt update -y
-    sudo apt install -y git curl unzip ca-certificates zsh tmux
+    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux
   elif need dnf; then
     sudo dnf install -y git curl unzip ca-certificates zsh tmux
   elif need pacman; then
@@ -182,6 +182,86 @@ install_ohmyzsh_plugins() {
   done
 }
 
+change_shell_to_zsh() {
+  local current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+  local zsh_path="$(command -v zsh)"
+  
+  if [ "$current_shell" = "$zsh_path" ]; then
+    log "Shell is already zsh"
+    return
+  fi
+  
+  if [ -z "$zsh_path" ]; then
+    warn "zsh not found in PATH, cannot change shell"
+    return
+  fi
+  
+  log "Changing default shell from $current_shell to $zsh_path"
+  if ! grep -q "^$zsh_path$" /etc/shells; then
+    log "Adding $zsh_path to /etc/shells"
+    echo "$zsh_path" | sudo tee -a /etc/shells
+  fi
+  
+  chsh -s "$zsh_path"
+  log "Shell changed to zsh. Please log out and back in for the change to take effect."
+}
+
+install_rust() {
+  if need rustc; then
+    log "Rust is already installed"
+    return
+  fi
+  
+  log "Installing Rust via rustup"
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  
+  # Source the cargo environment
+  if [ -f "$HOME/.cargo/env" ]; then
+    source "$HOME/.cargo/env"
+  fi
+  
+  log "Rust installed successfully"
+}
+
+install_go() {
+  if need go; then
+    log "Go is already installed"
+    return
+  fi
+  
+  log "Installing Go from official binaries"
+  
+  # Get the latest Go version
+  local go_version
+  go_version=$(curl -s https://go.dev/VERSION?m=text)
+  
+  if [ -z "$go_version" ]; then
+    warn "Could not fetch latest Go version, using fallback"
+    go_version="go1.21.5"
+  fi
+  
+  local go_archive="${go_version}.linux-amd64.tar.gz"
+  local download_url="https://go.dev/dl/${go_archive}"
+  
+  log "Downloading Go ${go_version}"
+  wget -O "/tmp/${go_archive}" "$download_url"
+  
+  log "Installing Go to /usr/local"
+  sudo rm -rf /usr/local/go
+  sudo tar -C /usr/local -xzf "/tmp/${go_archive}"
+  
+  # Clean up
+  rm "/tmp/${go_archive}"
+  
+  # Add Go to PATH if not already present
+  if ! echo "$PATH" | grep -q "/usr/local/go/bin"; then
+    log "Adding Go to PATH in current session"
+    export PATH=$PATH:/usr/local/go/bin
+  fi
+  
+  log "Go installed successfully"
+}
+
 
 # ================== Main ==================
 main() {
@@ -208,15 +288,14 @@ main() {
   # oh-my-posh binary (independent of zsh)
   install_oh_my_posh
 
-if [ ! -d "$OHMYZSH_DEST" ]; then
-  install_oh_my_zsh
-else
-  log "Skipping oh-my-zsh installer (repo-synced)"
-fi
+  install_ohmyzsh_plugins
 
-install_ohmyzsh_plugins   # <---- add this line
+  # Install Rust and Go
+  install_rust
+  install_go
 
-
+  # Change default shell to zsh
+  change_shell_to_zsh
 
   log "Done."
   log "Update later: (cd $DOTDIR && git pull --ff-only)"
