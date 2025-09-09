@@ -1,0 +1,34 @@
+# -----------------------------------------------------
+# ALIASES
+# -----------------------------------------------------
+alias proj='cd /home/brean/projects/'
+alias upgreat='sudo apt update && sudo apt upgrade'
+# -----------------------------------------------------
+# General
+# -----------------------------------------------------
+alias c='clear'
+alias nf='fastfetch'
+alias pf='fastfetch'
+alias ff='fastfetch'
+alias ls='eza  --icons=always'
+alias ll='eza -al --icons=always'
+alias lt='eza -a --tree --level=1 --icons=always'
+alias shutdown='systemctl poweroff'
+alias v='$EDITOR'
+alias vim='$EDITOR'
+alias wifi='nmtui'
+alias curlapi='curl -H "X-Master-Password: 5d97540b213a5e3e0c764975ce197b6c" localhost:6000/token/new/admin'
+alias curllead='curl -H "X-Master-Password: 5d97540b213a5e3e0c764975ce197b6c" api.leadlens.work/token/new/admin'
+# -----------------------------------------------------
+
+
+auth_lead() {
+  local token=$(curllead | tr -d '"')
+  curl -H "Authorization: Bearer $token" "$@"
+}
+
+
+auth_local() {
+  local token=$(curlapi | tr -d '"')
+  curl -H "Authorization: Bearer $token" "$@"
+}
