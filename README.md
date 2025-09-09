@@ -8,6 +8,7 @@ oh-my-posh
 .zshrc
 .tmux
 .tmux.conf
+.oh-my-zsh
 
 
 # Install
