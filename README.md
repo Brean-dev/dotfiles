@@ -9,3 +9,9 @@ oh-my-posh
 .tmux
 .tmux.conf
 
+
+# Install
+
+```bash
+ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Brean-dev/dotfiles/refs/heads/main/install.sh)"
+```
