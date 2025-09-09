@@ -12,6 +12,7 @@ TMUX_DIR_DEST="${TMUX_DIR_DEST:-$HOME/.tmux}"
 TMUX_CONF_DEST="${TMUX_CONF_DEST:-$HOME/.tmux.conf}"
 ZSH_FILE_DEST="${ZSH_FILE_DEST:-$HOME/.zshrc}"
 ZSH_DIR_DEST="${ZSH_DIR_DEST:-$HOME/.zshrc.d}"
+OHMYZSH_DEST="${OHMYZSH_DEST:-$HOME/.oh-my-zsh}"
 
 # ================== Helpers ==================
 log()  { printf "\033[1;32m==>\033[0m %s\n" "$*"; }
@@ -24,13 +25,13 @@ pm_install() {
     sudo apt update -y
     sudo apt install -y git curl unzip ca-certificates zsh tmux
   elif need dnf; then
-    sudo dnf install -y git curl unzip ca-certificates zsh tmux 
+    sudo dnf install -y git curl unzip ca-certificates zsh tmux
   elif need pacman; then
-    sudo pacman -Sy --noconfirm git curl unzip ca-certificates zsh tmux 
+    sudo pacman -Sy --noconfirm git curl unzip ca-certificates zsh tmux
   elif need zypper; then
-    sudo zypper install -y git curl unzip ca-certificates zsh tmux 
+    sudo zypper install -y git curl unzip ca-certificates zsh tmux
   elif need apk; then
-    sudo apk add --no-cache git curl unzip ca-certificates zsh tmux 
+    sudo apk add --no-cache git curl unzip ca-certificates zsh tmux
   else
     warn "Unknown package manager; please install git curl unzip zsh tmux neovim manually."
   fi
@@ -40,6 +41,17 @@ install_oh_my_posh() {
   if need oh-my-posh; then return; fi
   log "Installing oh-my-posh to /usr/local/bin"
   curl -fsSL https://ohmyposh.dev/install.sh | sudo bash -s -- -d /usr/local/bin
+}
+
+install_oh_my_zsh() {
+  # Only install if ~/.oh-my-zsh isn't already provided by repo or present.
+  if [ -d "$OHMYZSH_DEST" ]; then
+    log "oh-my-zsh already present at $OHMYZSH_DEST"
+    return
+  fi
+  log "Installing oh-my-zsh (non-interactive; KEEP_ZSHRC, no chsh, no auto-run)"
+  RUNZSH=no CHSH=${CHSH:-no} KEEP_ZSHRC=yes \
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
 mkxdg() {
@@ -99,6 +111,13 @@ place_dotfiles() {
     link_dir "$DOTDIR/oh-my-posh" "$POSH_DEST"
   fi
 
+  # oh-my-zsh/ or .oh-my-zsh/ from repo → ~/.oh-my-zsh
+  if [ -d "$DOTDIR/oh-my-zsh" ] || [ -d "$DOTDIR/.oh-my-zsh" ]; then
+    local zsrc="$DOTDIR/oh-my-zsh"
+    [ -d "$DOTDIR/.oh-my-zsh" ] && zsrc="$DOTDIR/.oh-my-zsh"
+    link_dir "$zsrc" "$OHMYZSH_DEST"
+  fi
+
   # tmux/ (optional) and tmux.conf
   if [ -d "$DOTDIR/tmux" ]; then
     link_dir "$DOTDIR/tmux" "$TMUX_DIR_DEST"
@@ -113,12 +132,10 @@ place_dotfiles() {
   elif [ -f "$DOTDIR/zshrc" ]; then
     link_file "$DOTDIR/zshrc" "$ZSH_FILE_DEST"
   elif [ -d "$DOTDIR/zshrc" ] || [ -d "$DOTDIR/.zshrc" ]; then
-    # Use directory-based config: ~/.zshrc.d with loader ~/.zshrc (only create loader if not already a file in repo)
     local zdir="$DOTDIR/zshrc"
     [ -d "$DOTDIR/.zshrc" ] && zdir="$DOTDIR/.zshrc"
     link_dir "$zdir" "$ZSH_DIR_DEST"
     if [ ! -f "$DOTDIR/.zshrc" ] && [ ! -f "$DOTDIR/zshrc" ]; then
-      # Create loader that sources *.zsh from ~/.zshrc.d
       if [ ! -f "$ZSH_FILE_DEST" ] || [ -L "$ZSH_FILE_DEST" ]; then
         backup_path "$ZSH_FILE_DEST"
         cat >"$ZSH_FILE_DEST" <<'LOADER'
@@ -143,7 +160,6 @@ main() {
   BACKUP_DIR="$BACKUP_BASE/$(date +%Y%m%d-%H%M%S)"
   log "Distro detection & dependency install"
   pm_install
-  install_oh_my_posh
 
   log "Prepare directories"
   mkxdg
@@ -153,6 +169,16 @@ main() {
 
   log "Place symlinks"
   place_dotfiles
+
+  # If repo didn’t provide ~/.oh-my-zsh, install it via official script.
+  if [ ! -d "$OHMYZSH_DEST" ]; then
+    install_oh_my_zsh
+  else
+    log "Skipping oh-my-zsh installer (repo-synced)"
+  fi
+
+  # oh-my-posh binary (independent of zsh)
+  install_oh_my_posh
 
   log "Done."
   log "Update later: (cd $DOTDIR && git pull --ff-only)"
