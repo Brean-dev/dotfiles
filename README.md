@@ -5,3 +5,4 @@
 nvim 
 zshrc
 oh-my-posh
+.zshrc
