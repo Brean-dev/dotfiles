@@ -23,7 +23,7 @@ need() { command -v "$1" >/dev/null 2>&1; }
 
 pm_install() {
   if need apt; then
-    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux fastfetch
+    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux fastfetch yq
   elif need dnf; then
     sudo dnf install -y git curl unzip ca-certificates zsh tmux
   elif need pacman; then
