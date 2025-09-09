@@ -1,1 +1,7 @@
-# Dotfiles of Brean-dev
+## Dotfiles of Brean-dev
+
+
+# Contains
+nvim 
+zshrc
+oh-my-posh
