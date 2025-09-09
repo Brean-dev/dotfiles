@@ -6,3 +6,6 @@ nvim
 zshrc
 oh-my-posh
 .zshrc
+.tmux
+.tmux.conf
+
