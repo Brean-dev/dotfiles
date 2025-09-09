@@ -22,15 +22,15 @@ need() { command -v "$1" >/dev/null 2>&1; }
 pm_install() {
   if need apt; then
     sudo apt update -y
-    sudo apt install -y git curl unzip ca-certificates zsh tmux neovim
+    sudo apt install -y git curl unzip ca-certificates zsh tmux
   elif need dnf; then
-    sudo dnf install -y git curl unzip ca-certificates zsh tmux neovim
+    sudo dnf install -y git curl unzip ca-certificates zsh tmux 
   elif need pacman; then
-    sudo pacman -Sy --noconfirm git curl unzip ca-certificates zsh tmux neovim
+    sudo pacman -Sy --noconfirm git curl unzip ca-certificates zsh tmux 
   elif need zypper; then
-    sudo zypper install -y git curl unzip ca-certificates zsh tmux neovim
+    sudo zypper install -y git curl unzip ca-certificates zsh tmux 
   elif need apk; then
-    sudo apk add --no-cache git curl unzip ca-certificates zsh tmux neovim
+    sudo apk add --no-cache git curl unzip ca-certificates zsh tmux 
   else
     warn "Unknown package manager; please install git curl unzip zsh tmux neovim manually."
   fi
