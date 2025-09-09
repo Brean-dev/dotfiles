@@ -155,6 +155,34 @@ LOADER
   fi
 }
 
+
+install_ohmyzsh_plugins() {
+  log "Ensuring oh-my-zsh plugins exist"
+
+  local custom="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+  mkdir -p "$custom/plugins"
+
+  # Map of plugin_name → git_url
+  declare -A plugins=(
+    [fzf-zsh-plugin]="https://github.com/unixorn/fzf-zsh-plugin.git"
+    [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions.git"
+    [zsh-syntax-highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting.git"
+    [fast-syntax-highlighting]="https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+    [zsh-fzf-history-search]="https://github.com/joshskidmore/zsh-fzf-history-search.git"
+  )
+
+  for name in "${!plugins[@]}"; do
+    local dest="$custom/plugins/$name"
+    if [ -d "$dest" ]; then
+      log "[oh-my-zsh] plugin '$name' already installed"
+    else
+      log "[oh-my-zsh] installing plugin '$name'"
+      git clone --depth=1 "${plugins[$name]}" "$dest"
+    fi
+  done
+}
+
+
 # ================== Main ==================
 main() {
   BACKUP_DIR="$BACKUP_BASE/$(date +%Y%m%d-%H%M%S)"
@@ -179,6 +207,16 @@ main() {
 
   # oh-my-posh binary (independent of zsh)
   install_oh_my_posh
+
+if [ ! -d "$OHMYZSH_DEST" ]; then
+  install_oh_my_zsh
+else
+  log "Skipping oh-my-zsh installer (repo-synced)"
+fi
+
+install_ohmyzsh_plugins   # <---- add this line
+
+
 
   log "Done."
   log "Update later: (cd $DOTDIR && git pull --ff-only)"
