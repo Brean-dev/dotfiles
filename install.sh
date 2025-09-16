@@ -23,7 +23,7 @@ need() { command -v "$1" >/dev/null 2>&1; }
 # ...existing code...
 pm_install() {
   if need apt; then
-    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq fzf
+    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq
     # Fastfetch is not in apt, install from GitHub
     if ! need fastfetch; then
       log "Installing fastfetch from GitHub releases"
@@ -35,6 +35,12 @@ pm_install() {
       else
         warn "Could not find fastfetch .deb release for linux-amd64"
       fi
+    fi
+    # Install fzf via git clone (not apt)
+    if ! need fzf; then
+      log "Installing fzf via git clone"
+      git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+      ~/.fzf/install --all
     fi
   elif need dnf; then
     sudo dnf install -y git curl unzip ca-certificates zsh tmux
