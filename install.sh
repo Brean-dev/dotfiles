@@ -235,6 +235,8 @@ change_shell_to_zsh() {
 install_rust() {
   if need rustc; then
     log "Rust is already installed"
+    # Install zoxide & eza if rust is present
+    install_cargo_tools
     return
   fi
   
@@ -247,6 +249,23 @@ install_rust() {
   fi
   
   log "Rust installed successfully"
+  install_cargo_tools
+}
+
+install_cargo_tools() {
+  if need zoxide; then
+    log "zoxide is already installed"
+  else
+    log "Installing zoxide via cargo"
+    cargo install zoxide
+  fi
+
+  if need eza; then
+    log "eza is already installed"
+  else
+    log "Installing eza via cargo"
+    cargo install eza
+  fi
 }
 
 install_go() {
