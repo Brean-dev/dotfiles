@@ -20,9 +20,22 @@ warn() { printf "\033[1;33m!! \033[0m%s\n" "$*"; }
 die()  { printf "\033[1;31mXX \033[0m%s\n" "$*"; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1; }
 
+# ...existing code...
 pm_install() {
   if need apt; then
-    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux fastfetch yq
+    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq
+    # Fastfetch is not in apt, install from GitHub
+    if ! need fastfetch; then
+      log "Installing fastfetch from GitHub releases"
+      ff_url=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f4)
+      if [ -n "$ff_url" ]; then
+        wget -O /tmp/fastfetch.deb "$ff_url"
+        sudo dpkg -i /tmp/fastfetch.deb || sudo apt -f install -y
+        rm /tmp/fastfetch.deb
+      else
+        warn "Could not find fastfetch .deb release for linux-amd64"
+      fi
+    fi
   elif need dnf; then
     sudo dnf install -y git curl unzip ca-certificates zsh tmux
   elif need pacman; then
@@ -35,6 +48,7 @@ pm_install() {
     warn "Unknown package manager; please install git curl unzip zsh tmux neovim manually."
   fi
 }
+# ...existing code...
 
 install_oh_my_posh() {
   if need oh-my-posh; then return; fi
