@@ -23,7 +23,7 @@ need() { command -v "$1" >/dev/null 2>&1; }
 # ...existing code...
 pm_install() {
   if need apt; then
-    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq
+    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq fzf
     # Fastfetch is not in apt, install from GitHub
     if ! need fastfetch; then
       log "Installing fastfetch from GitHub releases"
@@ -147,7 +147,7 @@ place_dotfiles() {
     log "Linked dir  $DOTDIR/zshrc_custom → $HOME/.config/zshrc_custom"
   fi
 
-  
+
  if [ -f "$DOTDIR/.zshrc" ]; then
     link_file "$DOTDIR/.zshrc" "$ZSH_FILE_DEST"
   elif [ -f "$DOTDIR/zshrc" ]; then
