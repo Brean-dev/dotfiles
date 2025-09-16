@@ -85,8 +85,11 @@ link_dir() {
   local src="$1" dest="$2"
   mkdir -p "$(dirname "$dest")"
   backup_path "$dest"
-  ln -snf "$src" "$dest"
-  log "Linked dir  $src → $dest"
+  if ln -snf "$src" "$dest"; then
+    log "Linked dir  $src → $dest"
+  else
+    die "Failed to link $src → $dest"
+  fi
 }
 
 link_file() {
@@ -111,6 +114,7 @@ clone_or_update() {
   log "Cloning $REPO_HTTPS → $DOTDIR (branch: $BRANCH)"
   git clone --depth=1 --branch "$BRANCH" "$REPO_HTTPS" "$DOTDIR"
 }
+
 
 # ================== Placement logic ==================
 place_dotfiles() {
@@ -139,14 +143,14 @@ place_dotfiles() {
     link_file "$DOTDIR/tmux.conf" "$TMUX_CONF_DEST"
   fi
 
-  # Zsh config: prefer a FILE (.zshrc), else support zshrc directory loader.
-  if [ -f "$DOTDIR/.zshrc" ]; then
+ if [ -f "$DOTDIR/.zshrc" ]; then
     link_file "$DOTDIR/.zshrc" "$ZSH_FILE_DEST"
   elif [ -f "$DOTDIR/zshrc" ]; then
     link_file "$DOTDIR/zshrc" "$ZSH_FILE_DEST"
   elif [ -d "$DOTDIR/zshrc" ] || [ -d "$DOTDIR/.zshrc" ]; then
     local zdir="$DOTDIR/zshrc"
     [ -d "$DOTDIR/.zshrc" ] && zdir="$DOTDIR/.zshrc"
+    log "Detected zshrc directory at $zdir, linking to $ZSH_DIR_DEST"
     link_dir "$zdir" "$ZSH_DIR_DEST"
     if [ ! -f "$DOTDIR/.zshrc" ] && [ ! -f "$DOTDIR/zshrc" ]; then
       if [ ! -f "$ZSH_FILE_DEST" ] || [ -L "$ZSH_FILE_DEST" ]; then
