@@ -147,8 +147,8 @@ place_dotfiles() {
     link_file "$DOTDIR/.zshrc" "$ZSH_FILE_DEST"
   elif [ -f "$DOTDIR/zshrc" ]; then
     link_file "$DOTDIR/zshrc" "$ZSH_FILE_DEST"
-  elif [ -d "$DOTDIR/zshrc" ] || [ -d "$DOTDIR/.zshrc" ]; then
-    local zdir="$DOTDIR/zshrc"
+  elif [ -d "$DOTDIR/zshrc_custom" ] || [ -d "$DOTDIR/.zshrc" ]; then
+    local zdir="$DOTDIR/zshrc_custom"
     [ -d "$DOTDIR/.zshrc" ] && zdir="$DOTDIR/.zshrc"
     log "Detected zshrc directory at $zdir, linking to $ZSH_DIR_DEST"
     link_dir "$zdir" "$ZSH_DIR_DEST"
