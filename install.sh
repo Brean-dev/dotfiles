@@ -142,7 +142,12 @@ place_dotfiles() {
   if [ -f "$DOTDIR/tmux.conf" ]; then
     link_file "$DOTDIR/tmux.conf" "$TMUX_CONF_DEST"
   fi
+  if [ -d "$DOTDIR/zshrc_custom" ]; then
+    link_dir "$DOTDIR/zshrc_custom" "$HOME/.config/zshrc_custom"
+    log "Linked dir  $DOTDIR/zshrc_custom → $HOME/.config/zshrc_custom"
+  fi
 
+  
  if [ -f "$DOTDIR/.zshrc" ]; then
     link_file "$DOTDIR/.zshrc" "$ZSH_FILE_DEST"
   elif [ -f "$DOTDIR/zshrc" ]; then
