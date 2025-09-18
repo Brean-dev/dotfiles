@@ -20,7 +20,7 @@
 # Load modular configuration
 # -----------------------------------------------------
 export PATH=$PATH:/usr/local/go/bin
-for f in ~/.config/zshrc_custom/*; do
+for f in ~/.config/zshrc/*; do
     if [ ! -d $f ]; then
         c=`echo $f | sed -e "s=.config/zshrc=.config/zshrc/custom="`
         [[ -f $c ]] && source $c || source $f
