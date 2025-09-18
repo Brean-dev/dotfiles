@@ -28,7 +28,7 @@ style = 'plain'
 
 [[blocks.segments]]
 type = 'text'
-template = '  '
+template = ' 󰣇'
 foreground = '#ff47e7'
 background = 'transparent'
 style = 'plain'

@@ -1,5 +1,5 @@
 vim.tbl_islist = vim.islist
-vim.g.python3_host_prog = vim.fn.expand("~/.virtualenvs/neovim3/bin/python")
+vim.g.python3_host_prog = vim.fn.expand("~/.venvs/nvim/bin/python3")
 
 vim.o.wrap = true
 
@@ -21,10 +21,11 @@ require("config.telescope")
 -- require("config.gruv")
 require("config.mintheme")
 
-require("config.diagnostic")
+-- require("config.diagnostic")
 require("config.format")
 require("config.cmp")
 require("config.lsp")
 require("config.keymaps")
 require("config.lualine")
 require("config.luxmotion")
+require("config.tiny-inline-diagnostic")

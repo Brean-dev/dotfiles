@@ -1,5 +1,5 @@
-local lspconfig = require("lspconfig")
-local util = require("lspconfig.util")
+-- NO: local lspconfig = require("lspconfig")
+-- NO: local util = require("lspconfig.util")
 
 -- Completion capabilities
 local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
@@ -37,10 +37,11 @@ local on_attach = function(_, bufnr)
 end
 
 -- ===== RUST =====
-lspconfig.rust_analyzer.setup({
+vim.lsp.config("rust_analyzer", {
 	on_attach = on_attach,
 	capabilities = capabilities,
-	root_dir = util.root_pattern("Cargo.toml", ".git"),
+	-- Use markers instead of lspconfig.util.root_pattern
+	root_markers = { "Cargo.toml", ".git" },
 	settings = {
 		["rust-analyzer"] = {
 			cargo = { allFeatures = true },
@@ -52,10 +53,10 @@ lspconfig.rust_analyzer.setup({
 })
 
 -- ===== GO =====
-lspconfig.gopls.setup({
+vim.lsp.config("gopls", {
 	on_attach = on_attach,
 	capabilities = capabilities,
-	root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+	root_markers = { "go.work", "go.mod", ".git" },
 	settings = {
 		gopls = {
 			usePlaceholders = true,
@@ -63,17 +64,16 @@ lspconfig.gopls.setup({
 			staticcheck = true,
 			gofumpt = true,
 			expandWorkspaceToModule = true,
-			-- Optional: filter noisy dirs if present
 			-- directoryFilters = { "-.git", "-node_modules", "-dist", "-target" },
 		},
 	},
 })
 
 -- ===== LUA =====
-lspconfig.lua_ls.setup({
+vim.lsp.config("lua_ls", {
 	on_attach = on_attach,
 	capabilities = capabilities,
-	root_dir = util.root_pattern(".luarc.json", ".luarc.jsonc", ".git"),
+	root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
 	settings = {
 		Lua = {
 			runtime = { version = "LuaJIT" },
@@ -87,8 +87,12 @@ lspconfig.lua_ls.setup({
 	},
 })
 
+-- Enable all three configs
+vim.lsp.enable("rust_analyzer")
+vim.lsp.enable("gopls")
+vim.lsp.enable("lua_ls")
+
 -- ===== Workspace-wide diagnostics (command) =====
--- Uses workspace/diagnostic if supported; falls back to opening files
 local function request_workspace_diags(client)
 	if client and client.supports_method and client.supports_method("workspace/diagnostic") then
 		client.request("workspace/diagnostic", { previousResultIds = {} }, function(_, _)
@@ -108,7 +112,6 @@ vim.api.nvim_create_user_command("LspScanProject", function()
 			return
 		end
 	end
-	-- Fallback: touch files so servers publish diags (requires ripgrep)
 	local root = vim.fn.getcwd()
 	local ok, files = pcall(vim.fn.systemlist, "rg --files " .. vim.fn.shellescape(root))
 	if ok then
@@ -121,22 +124,21 @@ vim.api.nvim_create_user_command("LspScanProject", function()
 	end
 end, { desc = "Populate diagnostics for entire workspace" })
 
--- Toggle focus between editor and QUICKFIX (diagnostics) window
+-- Quickfix / location list helpers (unchanged)
 local function qf_toggle_focus()
 	local qf = vim.fn.getqflist({ winid = 1 }).winid
 	if qf == 0 then
-		vim.cmd("copen") -- not open? open it
+		vim.cmd("copen")
 		qf = vim.fn.getqflist({ winid = 1 }).winid
 	end
 	if vim.api.nvim_get_current_win() == qf then
-		vim.cmd("wincmd p") -- currently in QF -> go back
+		vim.cmd("wincmd p")
 	else
-		vim.api.nvim_set_current_win(qf) -- jump into QF
+		vim.api.nvim_set_current_win(qf)
 	end
 end
 vim.keymap.set("n", "<leader>dj", qf_toggle_focus, { desc = "Toggle focus: editor <-> diagnostics (quickfix)" })
 
--- Optional: same idea for LOCATION LIST (buffer-local diagnostics)
 local function loc_toggle_focus()
 	local lw = vim.fn.getloclist(0, { winid = 1 }).winid
 	if lw == 0 then
@@ -151,10 +153,7 @@ local function loc_toggle_focus()
 end
 vim.keymap.set("n", "<leader>dl", loc_toggle_focus, { desc = "Toggle focus: editor <-> location list" })
 
--- Handy extras
 vim.keymap.set("n", "<leader>dx", "<cmd>cclose<cr>", { desc = "Close diagnostics (quickfix)" })
 vim.keymap.set("n", "<leader>d]", "<cmd>cnext<cr>", { desc = "Next diagnostic (quickfix)" })
 vim.keymap.set("n", "<leader>d[", "<cmd>cprev<cr>", { desc = "Prev diagnostic (quickfix)" })
-
--- Generic: swap to previous window (works anywhere)
 vim.keymap.set("n", "<leader><tab>", "<C-w>p", { desc = "Previous window" })

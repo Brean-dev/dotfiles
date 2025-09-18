@@ -77,35 +77,49 @@ return require("packer").startup(function(use)
 		},
 		config = function()
 			require("mason").setup()
+
 			require("mason-lspconfig").setup({
 				ensure_installed = { "gopls" },
-			})
+				handlers = {
+					-- default: enable any installed server with its current config
+					function(server)
+						vim.lsp.enable(server)
+					end,
 
-			local lspconfig = require("lspconfig")
-			lspconfig.gopls.setup({
-				settings = {
-					gopls = {
-						analyses = { unusedparams = true, shadow = true },
-						staticcheck = true,
-					},
+					-- gopls with your custom settings
+					gopls = function()
+						vim.lsp.config("gopls", {
+							settings = {
+								gopls = {
+									analyses = { unusedparams = true, shadow = true },
+									staticcheck = true,
+								},
+							},
+						})
+						vim.lsp.enable("gopls")
+					end,
 				},
 			})
 
-			-- Optional: tweak LSP semantic token highlight links for Go
+			-- Optional: LSP semantic token highlight links for Go (unchanged)
 			vim.cmd([[
-        hi! link @lsp.type.parameter.go Identifier
-        hi! link @lsp.type.function.go Function
-        hi! link @lsp.type.method.go Function
-        hi! link @lsp.type.interface.go Type
-        hi! link @lsp.typemod.variable.global.go Constant
-      ]])
+      hi! link @lsp.type.parameter.go Identifier
+      hi! link @lsp.type.function.go Function
+      hi! link @lsp.type.method.go Function
+      hi! link @lsp.type.interface.go Type
+      hi! link @lsp.typemod.variable.global.go Constant
+    ]])
 		end,
 	})
+
 	use("hrsh7th/nvim-cmp")
 	use("hrsh7th/cmp-nvim-lsp")
 	use("L3MON4D3/LuaSnip")
 	use("saadparwaiz1/cmp_luasnip")
 
+	use({
+		"rachartier/tiny-inline-diagnostic.nvim",
+	})
 	-- formatting
 	use({
 		"stevearc/conform.nvim",

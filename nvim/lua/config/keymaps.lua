@@ -30,7 +30,7 @@ end, { desc = "Open harpoon window" })
 --vim.keymap.set("n", "<leader>ff", tb.find_files, { desc = "Files" })
 vim.keymap.set("n", "<leader>ff", function()
 	require("telescope.builtin").find_files({
-		file_ignore_patterns = { "%.md$" },
+		file_ignore_patterns = { "%.md$", "%.git", "%.svg", "%.img" },
 	})
 end, { desc = "Files (no .md)" })
 
