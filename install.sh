@@ -238,15 +238,27 @@ install_rust() {
     install_cargo_tools
     return
   fi
-  
+
   log "Installing Rust via rustup"
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-  
-  # Source the cargo environment
+
+  # Source the cargo environment for this session
   if [ -f "$HOME/.cargo/env" ]; then
     source "$HOME/.cargo/env"
   fi
-  
+
+  # Persist in zshrc if not already there
+  if ! grep -q 'source "$HOME/.cargo/env"' "$HOME/.zshrc"; then
+    {
+      echo ""
+      echo "# Rust setup"
+      echo 'if [ -f "$HOME/.cargo/env" ]; then'
+      echo '  source "$HOME/.cargo/env"'
+      echo "fi"
+    } >> "$HOME/.zshrc"
+    log "Added Rust PATH to ~/.zshrc"
+  fi
+
   log "Rust installed successfully"
   install_cargo_tools
 }
