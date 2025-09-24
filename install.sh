@@ -47,7 +47,7 @@ pm_install() {
   elif need dnf; then
     log "Using dnf to install development packages"
     # Install Development Tools group then useful libraries/tools
-    sudo dnf groupinstall -y "Development Tools"
+    sudo dnf5 group install "c-development"
     sudo dnf install -y pkgconfig cmake ninja-build gdb lldb autoconf automake libtool clang llvm openssl-devel zlib-devel bzip2-devel readline-devel sqlite-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg2 ca-certificates zsh tmux yq
 
     # fzf & fastfetch handled later (fastfetch fallback handled for apt only above)
