@@ -20,6 +20,7 @@ plugins=(
     zsh-syntax-highlighting
     fast-syntax-highlighting
     zsh-fzf-history-search
+    z
 )
 
 # Set-up oh-my-zsh
