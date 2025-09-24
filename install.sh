@@ -48,7 +48,7 @@ pm_install() {
     log "Using dnf to install development packages"
     # Install Development Tools group then useful libraries/tools
     sudo dnf5 group install -y "c-development"
-    sudo dnf install -y pkgconfig cmake ninja-build gdb lldb autoconf automake libtool clang llvm openssl-devel zlib-devel bzip2-devel readline-devel sqlite-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg2 ca-certificates zsh tmux yq
+    sudo dnf install -y pkgconfig cmake ninja-build gdb lldb autoconf automake libtool clang llvm openssl-devel zlib-devel bzip2-devel readline-devel sqlite-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg2 ca-certificates zsh tmux yq fastfetch
 
     # fzf & fastfetch handled later (fastfetch fallback handled for apt only above)
 
@@ -65,7 +65,6 @@ pm_install() {
   elif need apk; then
     log "Using apk to install development packages"
     sudo apk add --no-cache build-base pkgconfig cmake ninja gdb autoconf automake libtool clang llvm openssl-dev zlib-dev bzip2-dev readline-dev sqlite-dev libffi-dev xz-dev ncurses-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gnupg ca-certificates zsh tmux yq
-
   else
     warn "Unknown package manager; please install git curl unzip zsh tmux neovim and development libs manually."
   fi
@@ -316,8 +315,41 @@ install_go() {
   fi
 
   log "Go installed successfully"
+  log "Installing lazygit through Git/Go"
+
 }
 
+install_lazygit(){
+  if ! command -v lazygit &>/dev/null; then
+    tmpdir=$(mktemp -d)
+    git clone https://github.com/jesseduffield/lazygit.git "$tmpdir/lazygit"
+    cd "$tmpdir/lazygit" || exit 1
+    go install
+  else
+    log "Lazygit is already installed"
+  fi
+}
+
+install_fastfetch() {
+  if command -v fastfetch &>/dev/null; then
+    log "fastfetch already installed"
+    return
+  fi
+
+  tmpdir=$(mktemp -d)
+  git clone https://github.com/fastfetch-cli/fastfetch "$tmpdir/fastfetch"
+  cd "$tmpdir/fastfetch" || exit 1
+
+  mkdir -p build
+  cd build || exit 1
+
+  cmake ..
+  cmake --build . --target fastfetch
+
+  sudo cp fastfetch /usr/local/bin/
+
+  log "Fastfetch installed to /usr/local/bin"
+}
 
 # ================== Main ==================
 main() {
@@ -349,9 +381,12 @@ main() {
   # Install Rust and Go
   install_rust
   install_go
-
+  # Install lazygit(Depends on go)
+  install_lazygit
   # Change default shell to zsh
   change_shell_to_zsh
+  # Install fastfetch if needed through cmake
+  install_fastfetch
 
   log "Done."
   log "Update later: (cd $DOTDIR && git pull --ff-only)"
