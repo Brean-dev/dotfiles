@@ -20,10 +20,11 @@ warn() { printf "\033[1;33m!! \033[0m%s\n" "$*"; }
 die()  { printf "\033[1;31mXX \033[0m%s\n" "$*"; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1; }
 
-# ...existing code...
+
 pm_install() {
   if need apt; then
-    sudo apt update && sudo apt upgrade -y && sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq
+    sudo apt update && sudo apt upgrade -y
+    sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq
     # Fastfetch is not in apt, install from GitHub
     if ! need fastfetch; then
       log "Installing fastfetch from GitHub releases"
@@ -42,19 +43,34 @@ pm_install() {
       git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
       ~/.fzf/install --all
     fi
+
   elif need dnf; then
-    sudo dnf install -y git curl unzip ca-certificates zsh tmux
+    log "Using dnf to install development packages"
+    # Install Development Tools group then useful libraries/tools
+    sudo dnf groupinstall -y "Development Tools"
+    sudo dnf install -y pkgconfig cmake ninja-build gdb lldb autoconf automake libtool clang llvm openssl-devel zlib-devel bzip2-devel readline-devel sqlite-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg2 ca-certificates zsh tmux yq
+
+    # fzf & fastfetch handled later (fastfetch fallback handled for apt only above)
+
   elif need pacman; then
-    sudo pacman -Sy --noconfirm git curl unzip ca-certificates zsh tmux
+    log "Using pacman to install development packages"
+    sudo pacman -Sy --noconfirm --needed base-devel pkgconf cmake ninja gdb lldb autoconf automake libtool clang llvm openssl zlib bzip2 readline sqlite libffi xz ncurses git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gnupg ca-certificates zsh tmux yq
+
   elif need zypper; then
-    sudo zypper install -y git curl unzip ca-certificates zsh tmux
+    log "Using zypper to install development packages"
+    # Install common development pattern + libraries/tools
+    sudo zypper install -y -t pattern devel_C_C++
+    sudo zypper install -y gcc gcc-c++ make pkg-config cmake ninja gdb lldb autoconf automake libtool clang llvm libopenssl-devel zlib-devel bzip2-devel readline-devel sqlite3-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gpg2 ca-certificates zsh tmux yq
+
   elif need apk; then
-    sudo apk add --no-cache git curl unzip ca-certificates zsh tmux
+    log "Using apk to install development packages"
+    sudo apk add --no-cache build-base pkgconfig cmake ninja gdb autoconf automake libtool clang llvm openssl-dev zlib-dev bzip2-dev readline-dev sqlite-dev libffi-dev xz-dev ncurses-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gnupg ca-certificates zsh tmux yq
+
   else
-    warn "Unknown package manager; please install git curl unzip zsh tmux neovim manually."
+    warn "Unknown package manager; please install git curl unzip zsh tmux neovim and development libs manually."
   fi
 }
-# ...existing code...
+
 
 install_oh_my_posh() {
   if need oh-my-posh; then return; fi
