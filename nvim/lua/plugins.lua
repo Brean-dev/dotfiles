@@ -147,8 +147,7 @@ return require("packer").startup(function(use)
 	})
 
 	-- colorscheme
-	-- use({ "ellisonleao/gruvbox.nvim" })
-	use({ "datsfilipe/min-theme.nvim" })
+	use({ "ellisonleao/gruvbox.nvim" })
 	-- wilder (make sure you have lua/config/wilder.lua)
 	use({
 		"gelguy/wilder.nvim",
@@ -239,4 +238,7 @@ return require("packer").startup(function(use)
 			})
 		end,
 	})
+
+	use("ray-x/go.nvim")
+	use("ray-x/guihua.lua") -- recommended if need floating window support
 end)

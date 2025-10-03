@@ -1,5 +1,5 @@
 vim.tbl_islist = vim.islist
-vim.g.python3_host_prog = vim.fn.expand("~/.venvs/nvim/bin/python3")
+vim.g.python3_host_prog = vim.fn.expand("/usr/sbin/python3")
 
 vim.o.wrap = true
 
@@ -19,7 +19,7 @@ vim.g.mapleader = " "
 require("plugins")
 require("config.telescope")
 -- require("config.gruv")
-require("config.mintheme")
+require("config.theme")
 
 -- require("config.diagnostic")
 require("config.format")
@@ -29,3 +29,4 @@ require("config.keymaps")
 require("config.lualine")
 require("config.luxmotion")
 require("config.tiny-inline-diagnostic")
+require("go").setup()
