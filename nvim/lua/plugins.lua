@@ -68,58 +68,57 @@ return require("packer").startup(function(use)
 		requires = { "nvim-lua/plenary.nvim" },
 	})
 
-	-- LSP + completion (configure Go LSP + semantic tokens)
-	use({
-		"neovim/nvim-lspconfig",
-		requires = {
-			{ "williamboman/mason.nvim" },
-			{ "williamboman/mason-lspconfig.nvim" },
-		},
-		config = function()
-			require("mason").setup()
+    use({
+  "neovim/nvim-lspconfig",
+  requires = {
+    { "williamboman/mason.nvim" },
+    { "williamboman/mason-lspconfig.nvim" },
+  },
+  config = function()
+    -- Mason manages binaries; auto-install missing servers
+    require("mason").setup()
+    require("mason-lspconfig").setup({
+      ensure_installed = { "gopls" },
+      automatic_installation = true,
+    })
 
-			require("mason-lspconfig").setup({
-				ensure_installed = { "gopls" },
-				handlers = {
-					-- default: enable any installed server with its current config
-					function(server)
-						vim.lsp.enable(server)
-					end,
+    -- Capabilities (nvim-cmp if present)
+    local ok_cmp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
+    local capabilities = ok_cmp and cmp_lsp.default_capabilities()
+      or vim.lsp.protocol.make_client_capabilities()
 
-					-- gopls with your custom settings
-					gopls = function()
-						vim.lsp.config("gopls", {
-							settings = {
-								gopls = {
-									analyses = { unusedparams = true, shadow = true },
-									staticcheck = true,
-								},
-							},
-						})
-						vim.lsp.enable("gopls")
-					end,
-				},
-			})
+    -- Define the server config with the new core API
+    vim.lsp.config("gopls", {
+      capabilities = capabilities,
+      settings = {
+        gopls = {
+          analyses = { unusedparams = true, shadow = true },
+          staticcheck = true,
+        },
+      },
+    })
 
-			-- Optional: LSP semantic token highlight links for Go (unchanged)
-			vim.cmd([[
+    -- Enable the server if the binary is available
+    if vim.fn.executable("gopls") == 1 then
+      vim.lsp.enable({ "gopls" })
+    end
+
+    -- Optional: tweak LSP semantic token highlight links for Go
+    vim.cmd([[
       hi! link @lsp.type.parameter.go Identifier
       hi! link @lsp.type.function.go Function
       hi! link @lsp.type.method.go Function
       hi! link @lsp.type.interface.go Type
       hi! link @lsp.typemod.variable.global.go Constant
     ]])
-		end,
-	})
+  end,
+})
 
 	use("hrsh7th/nvim-cmp")
 	use("hrsh7th/cmp-nvim-lsp")
 	use("L3MON4D3/LuaSnip")
 	use("saadparwaiz1/cmp_luasnip")
 
-	use({
-		"rachartier/tiny-inline-diagnostic.nvim",
-	})
 	-- formatting
 	use({
 		"stevearc/conform.nvim",
@@ -147,7 +146,8 @@ return require("packer").startup(function(use)
 	})
 
 	-- colorscheme
-	use({ "ellisonleao/gruvbox.nvim" })
+ use({ "ellisonleao/gruvbox.nvim" })
+	use({ "datsfilipe/min-theme.nvim" })
 	-- wilder (make sure you have lua/config/wilder.lua)
 	use({
 		"gelguy/wilder.nvim",
@@ -215,30 +215,4 @@ return require("packer").startup(function(use)
 			require("config.undo_glow")
 		end,
 	})
-	use({
-		"MeanderingProgrammer/render-markdown.nvim",
-		config = function()
-			require("render-markdown").setup({
-				file_types = { "markdown", "copilot-chat" },
-			})
-		end,
-	})
-
-	use({
-		"CopilotC-Nvim/CopilotChat.nvim",
-		requires = {
-			{ "nvim-lua/plenary.nvim", branch = "master" },
-		},
-		run = "make tiktoken",
-		config = function()
-			require("CopilotChat").setup({
-				highlight_headers = false,
-				separator = "---",
-				error_header = "> [!ERROR] Error",
-			})
-		end,
-	})
-
-	use("ray-x/go.nvim")
-	use("ray-x/guihua.lua") -- recommended if need floating window support
 end)

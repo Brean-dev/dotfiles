@@ -50,3 +50,4 @@ esac
 
 export PATH="$HOME/.cargo/bin:$PATH"
 eval "$(zoxide init zsh)"
+export PATH=$PATH:/opt/puppetlabs/bin

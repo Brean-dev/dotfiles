@@ -1,7 +1,7 @@
 local wilder = require("wilder")
 wilder.setup({ modes = { ":", "/", "?" } })
 
--- Pipeline (unchanged)
+-- Pipeline
 wilder.set_option("pipeline", {
 	wilder.branch(
 		wilder.python_file_finder_pipeline({
@@ -25,7 +25,8 @@ wilder.set_option("pipeline", {
 		}),
 		wilder.cmdline_pipeline({
 			fuzzy = 2,
-			fuzzy_filter = wilder.lua_fzy_filter(),
+			-- Use Python fuzzy filter instead of lua_fzy
+			fuzzy_filter = wilder.python_fuzzy_filter(),
 		}),
 		{
 			wilder.check(function(ctx, x)
@@ -70,29 +71,27 @@ end
 -- OPTIONAL: gradient for the selected item (uncomment to enable)
 local selected_gradient = gradient
 
--- Base highlighters (go through the gradient wrapper below)
+-- Base highlighters - use basic_highlighter (works without dependencies)
 local base_highlighters = {
 	wilder.pcre2_highlighter(),
-	wilder.lua_fzy_highlighter(),
+	wilder.basic_highlighter(), -- This works without fzy-lua-native
 }
 
 -- Popupmenu renderer with gradient
 local popupmenu_renderer = wilder.popupmenu_renderer(wilder.popupmenu_border_theme({
 	border = "rounded",
 	empty_message = wilder.popupmenu_empty_message_with_spinner(),
-	-- Apply gradient to candidates:
 	highlights = {
 		gradient = gradient,
 		-- selected_gradient = selected_gradient, -- enable if you want the selection also gradiented
 	},
-	-- Wrap your highlighters so the gradient is applied:
 	highlighter = wilder.highlighter_with_gradient(base_highlighters),
 	left = {
 		" ",
 		wilder.popupmenu_devicons(),
 		wilder.popupmenu_buffer_flags({
 			flags = " a + ",
-			icons = { ["+"] = "", a = "", h = "" },
+			icons = { ["+"] = "", a = "", h = "" },
 		}),
 	},
 	right = {
@@ -103,7 +102,6 @@ local popupmenu_renderer = wilder.popupmenu_renderer(wilder.popupmenu_border_the
 
 -- Wildmenu renderer with gradient
 local wildmenu_renderer = wilder.wildmenu_renderer({
-	-- Apply gradient + wrap the highlighters:
 	highlights = {
 		gradient = gradient,
 		-- selected_gradient = selected_gradient, -- optional
