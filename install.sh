@@ -339,8 +339,6 @@ install_fastfetch() {
 # ================== Main ==================
 main() {
   BACKUP_DIR="$BACKUP_BASE/$(date +%Y%m%d-%H%M%S)"
-  log "Distro detection & dependency install"
-  pm_install
 
   log "Prepare directories"
   mkxdg
@@ -350,6 +348,9 @@ main() {
 
   log "Place symlinks"
   place_dotfiles
+
+  log "Distro detection & dependency install"
+  pm_install
 
   # If repo didn't provide ~/.oh-my-zsh, install it via official script.
   if [ ! -d "$OHMYZSH_DEST" ]; then
