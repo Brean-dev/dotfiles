@@ -1,6 +1,6 @@
 #:schema https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
 
-version = 2
+version = 3
 final_space = true
 console_title_template = '{{ .Shell }} in {{ .Folder }}'
 
@@ -10,11 +10,17 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
   newline = true
 
   [[blocks.segments]]
+    type = 'text'
+    style = 'plain'
+    background = 'transparent'
+    foreground = 'green'
+    template = '{{ .Env.DISTRO }}'
+
+  [[blocks.segments]]
     type = 'path'
     style = 'plain'
     background = 'transparent'
     foreground = 'blue'
-    template = '{{ .Path }}'
 
     [blocks.segments.properties]
       style = 'full'

@@ -56,3 +56,5 @@ export PATH=$PATH:/opt/puppetlabs/bin
 if [ -f "$HOME/.cargo/env" ]; then
   source "$HOME/.cargo/env"
 fi
+
+export DISTRO=$(head -n 1 ~/.distro)
