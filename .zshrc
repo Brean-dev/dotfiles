@@ -51,3 +51,8 @@ esac
 export PATH="$HOME/.cargo/bin:$PATH"
 eval "$(zoxide init zsh)"
 export PATH=$PATH:/opt/puppetlabs/bin
+
+# Rust setup
+if [ -f "$HOME/.cargo/env" ]; then
+  source "$HOME/.cargo/env"
+fi
