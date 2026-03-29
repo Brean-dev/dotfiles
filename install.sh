@@ -24,8 +24,8 @@ need() { command -v "$1" >/dev/null 2>&1; }
 pm_install() {
   if need apt; then
     sudo apt update && sudo apt upgrade -y
-    sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux yq
-    # Fastfetch is not in apt, install from GitHub
+    sudo apt install -y build-essential pkg-config cmake ninja-build gdb lldb make autoconf automake libtool clang llvm libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses5-dev libncursesw5-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg ca-certificates zsh tmux fzf yq
+    # Fastfetch is not in apt, install from GitHub releases
     if ! need fastfetch; then
       log "Installing fastfetch from GitHub releases"
       ff_url=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep "browser_download_url.*linux-amd64.deb" | cut -d '"' -f4)
@@ -37,34 +37,24 @@ pm_install() {
         warn "Could not find fastfetch .deb release for linux-amd64"
       fi
     fi
-    # Install fzf via git clone (not apt)
-    if ! need fzf; then
-      log "Installing fzf via git clone"
-      git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-      ~/.fzf/install --all
-    fi
 
   elif need dnf; then
     log "Using dnf to install development packages"
-    # Install Development Tools group then useful libraries/tools
-    sudo dnf5 group install -y "c-development"
-    sudo dnf install -y pkgconfig cmake ninja-build gdb lldb autoconf automake libtool clang llvm openssl-devel zlib-devel bzip2-devel readline-devel sqlite-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg2 ca-certificates zsh tmux yq fastfetch
-
-    # fzf & fastfetch handled later (fastfetch fallback handled for apt only above)
+    sudo dnf group install -y "Development Tools"
+    sudo dnf install -y pkgconfig cmake ninja-build gdb lldb autoconf automake libtool clang llvm openssl-devel zlib-devel bzip2-devel readline-devel sqlite-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gnupg2 ca-certificates zsh tmux fzf yq fastfetch
 
   elif need pacman; then
     log "Using pacman to install development packages"
-    sudo pacman -Sy --noconfirm --needed base-devel pkgconf cmake ninja gdb lldb autoconf automake libtool clang llvm openssl zlib bzip2 readline sqlite libffi xz ncurses git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gnupg ca-certificates zsh tmux yq
+    sudo pacman -Sy --noconfirm --needed base-devel pkgconf cmake ninja gdb lldb autoconf automake libtool clang llvm openssl zlib bzip2 readline sqlite libffi xz ncurses git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop inetutils gnupg ca-certificates zsh tmux fzf yq fastfetch
 
   elif need zypper; then
     log "Using zypper to install development packages"
-    # Install common development pattern + libraries/tools
     sudo zypper install -y -t pattern devel_C_C++
-    sudo zypper install -y gcc gcc-c++ make pkg-config cmake ninja gdb lldb autoconf automake libtool clang llvm libopenssl-devel zlib-devel bzip2-devel readline-devel sqlite3-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd-find tree htop net-tools gpg2 ca-certificates zsh tmux yq
+    sudo zypper install -y gcc gcc-c++ make pkg-config cmake ninja gdb lldb autoconf automake libtool clang llvm libopenssl-devel zlib-devel bzip2-devel readline-devel sqlite3-devel libffi-devel xz-devel ncurses-devel git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gpg2 ca-certificates zsh tmux fzf yq fastfetch
 
   elif need apk; then
     log "Using apk to install development packages"
-    sudo apk add --no-cache build-base pkgconfig cmake ninja gdb autoconf automake libtool clang llvm openssl-dev zlib-dev bzip2-dev readline-dev sqlite-dev libffi-dev xz-dev ncurses-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gnupg ca-certificates zsh tmux yq
+    sudo apk add --no-cache build-base pkgconfig cmake ninja gdb autoconf automake libtool clang llvm openssl-dev zlib-dev bzip2-dev readline-dev sqlite-dev libffi-dev xz-dev ncurses-dev git mercurial subversion curl wget unzip zip tar rsync jq ripgrep fd tree htop net-tools gnupg ca-certificates zsh tmux fzf yq fastfetch
   else
     warn "Unknown package manager; please install git curl unzip zsh tmux neovim and development libs manually."
   fi
@@ -163,18 +153,19 @@ place_dotfiles() {
   if [ -f "$DOTDIR/tmux.conf" ]; then
     link_file "$DOTDIR/tmux.conf" "$TMUX_CONF_DEST"
   fi
+
+  # zshrc/ config directory
   if [ -d "$DOTDIR/zshrc" ]; then
-    link_dir "$DOTDIR/zshrc" "$HOME/.config/zshrc"
-    log "Linked dir  $DOTDIR/zshrc → $HOME/.config/zshrc"
+    link_dir "$DOTDIR/zshrc" "$ZSH_DIR_DEST"
   fi
 
-
- if [ -f "$DOTDIR/.zshrc" ]; then
+  # .zshrc loader file
+  if [ -f "$DOTDIR/.zshrc" ]; then
     link_file "$DOTDIR/.zshrc" "$ZSH_FILE_DEST"
-        log "Created loader $ZSH_FILE_DEST → sources $ZSH_DIR_DEST/*.zsh"
-      else
-        warn "$ZSH_FILE_DEST exists; not overwriting with loader."
- fi
+    log "Created loader $ZSH_FILE_DEST → sources $ZSH_DIR_DEST/*.zsh"
+  else
+    warn "$DOTDIR/.zshrc not found; skipping .zshrc symlink."
+  fi
 }
 
 
@@ -205,28 +196,28 @@ install_ohmyzsh_plugins() {
 }
 
 change_shell_to_zsh() {
-  local current_shell="$(getent passwd "$USER" | cut -d: -f7)"
-  local zsh_path="$(command -v zsh)"
-  
-  if [ "$current_shell" = "$zsh_path" ]; then
-    log "Shell is already zsh"
-    return
-  fi
-  
+  local current_shell
+  current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+  local zsh_path
+  zsh_path="$(command -v zsh)"
+
   if [ -z "$zsh_path" ]; then
     warn "zsh not found in PATH, cannot change shell"
     return
   fi
-  
+
+  if [ "$current_shell" = "$zsh_path" ]; then
+    log "Shell is already zsh"
+    return
+  fi
+
   log "Changing default shell from $current_shell to $zsh_path"
   if ! grep -q "^$zsh_path$" /etc/shells; then
     log "Adding $zsh_path to /etc/shells"
     echo "$zsh_path" | sudo tee -a /etc/shells
   fi
-  
-  chsh -s "$zsh_path"
 
-  exec zsh
+  chsh -s "$zsh_path"
   log "Shell changed to zsh. Please log out and back in for the change to take effect."
 }
 
@@ -243,11 +234,12 @@ install_rust() {
 
   # Source the cargo environment for this session
   if [ -f "$HOME/.cargo/env" ]; then
+    # shellcheck source=/dev/null
     source "$HOME/.cargo/env"
   fi
 
   # Persist in zshrc if not already there
-  if ! grep -q 'source "$HOME/.cargo/env"' "$HOME/.zshrc"; then
+  if [ -f "$HOME/.zshrc" ] && ! grep -q '\.cargo/env' "$HOME/.zshrc"; then
     {
       echo ""
       echo "# Rust setup"
@@ -288,11 +280,11 @@ install_go() {
 
   # Get the latest Go version
   local go_version
-  go_version=$(curl -s https://go.dev/VERSION?m=text | grep -m1 '^go[0-9]')
+  go_version=$(curl -s 'https://go.dev/VERSION?m=text' | grep -m1 '^go[0-9]')
 
   if [ -z "$go_version" ]; then
     warn "Could not fetch latest Go version, using fallback"
-    go_version="go1.21.5"
+    go_version="go1.22.0"
   fi
 
   local go_archive="${go_version}.linux-amd64.tar.gz"
@@ -308,45 +300,38 @@ install_go() {
   # Clean up
   rm "/tmp/${go_archive}"
 
-  # Add Go to PATH if not already present
-  if ! echo "$PATH" | grep -q "/usr/local/go/bin"; then
-    log "Adding Go to PATH in current session"
-    export PATH=$PATH:/usr/local/go/bin
-  fi
+  # Add Go to PATH for the rest of this script session
+  export PATH=$PATH:/usr/local/go/bin
 
   log "Go installed successfully"
-  log "Installing lazygit through Git/Go"
-
 }
 
-install_lazygit(){
-  if ! command -v lazygit &>/dev/null; then
-    tmpdir=$(mktemp -d)
-    git clone https://github.com/jesseduffield/lazygit.git "$tmpdir/lazygit"
-    cd "$tmpdir/lazygit" || exit 1
-    go install
-  else
+install_lazygit() {
+  if need lazygit; then
     log "Lazygit is already installed"
+    return
   fi
+
+  log "Installing lazygit via go install"
+  go install github.com/jesseduffield/lazygit@latest
 }
 
 install_fastfetch() {
-  if command -v fastfetch &>/dev/null; then
+  if need fastfetch; then
     log "fastfetch already installed"
     return
   fi
 
+  log "Building fastfetch from source"
+  local tmpdir
   tmpdir=$(mktemp -d)
   git clone https://github.com/fastfetch-cli/fastfetch "$tmpdir/fastfetch"
-  cd "$tmpdir/fastfetch" || exit 1
 
-  mkdir -p build
-  cd build || exit 1
+  cmake -S "$tmpdir/fastfetch" -B "$tmpdir/fastfetch/build"
+  cmake --build "$tmpdir/fastfetch/build" --target fastfetch
 
-  cmake ..
-  cmake --build . --target fastfetch
-
-  sudo cp fastfetch /usr/local/bin/
+  sudo cp "$tmpdir/fastfetch/build/fastfetch" /usr/local/bin/
+  rm -rf "$tmpdir"
 
   log "Fastfetch installed to /usr/local/bin"
 }
@@ -366,7 +351,7 @@ main() {
   log "Place symlinks"
   place_dotfiles
 
-  # If repo didn’t provide ~/.oh-my-zsh, install it via official script.
+  # If repo didn't provide ~/.oh-my-zsh, install it via official script.
   if [ ! -d "$OHMYZSH_DEST" ]; then
     install_oh_my_zsh
   else
@@ -381,12 +366,12 @@ main() {
   # Install Rust and Go
   install_rust
   install_go
-  # Install lazygit(Depends on go)
+  # Install lazygit (depends on go)
   install_lazygit
+  # Install fastfetch if not already provided by package manager
+  install_fastfetch
   # Change default shell to zsh
   change_shell_to_zsh
-  # Install fastfetch if needed through cmake
-  install_fastfetch
 
   log "Done."
   log "Update later: (cd $DOTDIR && git pull --ff-only)"
