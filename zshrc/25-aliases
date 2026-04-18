@@ -17,24 +17,11 @@ alias shutdown='systemctl poweroff'
 alias v='$EDITOR'
 alias vim='$EDITOR'
 alias wifi='nmtui'
-alias curlapi='curl -H "X-Master-Password: 5d97540b213a5e3e0c764975ce197b6c" localhost:6000/token/new/admin'
-alias curllead='curl -H "X-Master-Password: 5d97540b213a5e3e0c764975ce197b6c" api.leadlens.work/token/new/admin'
+
+alias performance='sudo cpupower frequency-set -g performance'
+alias powersave='sudo cpupower frequency-set -g powersave'
+alias check_cpupower='watch -n 1 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor'
 # -----------------------------------------------------
-
-
-auth_lead() {
-  local token=$(curllead | tr -d '"')
-  curl -H "Authorization: Bearer $token" "$@"
-}
-
-
-auth_local() {
-  local token=$(curlapi | tr -d '"')
-  curl -H "Authorization: Bearer $token" "$@"
-}
-
-alias py314='/opt/python-3.14.0/bin/python3.14'
-alias pip314='/opt/python-3.14.0/bin/pip3.14'
 alias update='echo "sudo dnf update -y && sudo dnf upgrade -y" && sudo dnf update -y && sudo dnf upgrade -y'
 
 alias claude='claude --verbose'

@@ -1,2 +1,3 @@
 tmp/
+nvim/lazy-lock.json
 zshrc/35-exports
